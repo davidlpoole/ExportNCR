@@ -4,11 +4,11 @@ Sub ExportNCR()
 ' David Poole 01/12/2020
 ' https://github.com/davidlpoole/ExportNCR
 '
-'
 
     Application.ScreenUpdating = False
-    On Error GoTo Err
+    On Error GoTo Err 'Make sure screen updating is reverted
    
+    Dim cSelectedNCR As Range
     Dim strSelectedNCR As String
     Dim strDir, strFile, strFileExt As String
     Dim wbNCRRegister, wbNCRForm As Workbook
@@ -16,22 +16,24 @@ Sub ExportNCR()
     Set wbNCRRegister = ActiveWorkbook
           
     'Get NCR number from the selected row and store var for later
-    strSelectedNCR = Trim(Cells(Range(Selection.Address).Row, 1).Value)
     
-    ' TODO - validate NCR number (check format is "##-###")
+    Set cSelectedNCR = Cells(Range(Selection.Address).Row, 1)
+    strSelectedNCR = Trim(cSelectedNCR.Value)
     
-    ' if selected row doesn't have an NCR number (is blank)
-    If Len(strSelectedNCR) = 0 Then
-        MsgBox ("No NCR Number found in cell " & Cells(Range(Selection.Address).Row, 1).Address)
+    'Validate NCR number (check format is "##-###")
+    If Len(strSelectedNCR) = 0 Or Not (strSelectedNCR Like "##-###") Then
+        MsgBox ("Invalid 'NCR Number' in cell " & cSelectedNCR.Address)
         GoTo Err
     End If
     
     'set the save directory and file extension
-    strDir = "H:\Business Analysis\QA\NCR\"
+    '(can specify a directory, or just use the current directory)
+    'strDir = "H:\Business Analysis\QA\NCR"
+    strDir = wbNCRRegister.Path 'excludes trailing backslash
     strFileExt = ".xlsx"
-    strFile = strDir & strSelectedNCR & strFileExt
+    strFile = strDir & "\NCR_" & strSelectedNCR & strFileExt
     
-    ' if file exists, then open file, else create new
+    'if file exists, then open file, else create new
     If Not Dir(strFile, vbDirectory) = vbNullString Then
         Set wbNCRForm = Workbooks.Open(strFile)
      Else
@@ -44,7 +46,8 @@ Sub ExportNCR()
         Sheets("NCR Form").Select
         Application.CutCopyMode = False
         Sheets("NCR Form").Copy
-        ActiveWorkbook.SaveAs Filename:=strFile, FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+        ActiveWorkbook.SaveAs Filename:=strFile, _
+            FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
         Set wbNCRForm = ActiveWorkbook
         
         'Remove formulas from sheet
