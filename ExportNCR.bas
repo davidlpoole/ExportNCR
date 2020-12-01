@@ -4,8 +4,6 @@ Sub ExportNCR()
 ' David Poole 01/12/2020
 ' https://github.com/davidlpoole/ExportNCR
 '
-' TODO (Maybe): show/hide NCR form in master sheet or reset values
-'
 '
 
     Application.ScreenUpdating = False
